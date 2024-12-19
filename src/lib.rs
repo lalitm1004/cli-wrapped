@@ -3,7 +3,6 @@ use std::{
     io::{self, BufRead, Write},
     path::PathBuf
 };
-
 use chrono::{DateTime, Datelike, Utc};
 use serde::{Deserialize, Serialize};
 use walkdir::WalkDir;
@@ -37,7 +36,7 @@ pub fn log_command(command: String) -> io::Result<()> {
 }
 
 pub fn clear_log() -> io::Result<()> {
-    print!("This action is irreversible. Clear command logs? [y/n] > ");
+    print!("This action is irreversible. Clear command logs across all years? [y/n] > ");
     io::stdout().flush()?;
 
     let mut input = String::new();
@@ -66,7 +65,6 @@ pub fn clear_log() -> io::Result<()> {
     }
 
     println!("Command logs cleared");
-
     Ok(())
 }
 

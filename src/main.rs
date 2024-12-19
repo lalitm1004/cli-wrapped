@@ -30,9 +30,9 @@ fn main() -> io::Result<()> {
     };
 
     match opt {
-        Cli::Log { command } => wrapped::log_command(command)?,
-        Cli::Clear => wrapped::clear_log()?,
-        Cli::Display => wrapped::display_wrapped()?,
+        Cli::Log { command } => cli_wrapped::log_command(command)?,
+        Cli::Clear => cli_wrapped::clear_log()?,
+        Cli::Display => cli_wrapped::display_wrapped()?,
     }
 
     Ok(())
