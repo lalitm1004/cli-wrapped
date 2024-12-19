@@ -1,6 +1,10 @@
 function _log_command() {
     local command="$1"
-    cli-wrapped log "$command"
+    local cmd_name=$(echo "$command" | awk '{print $1}')
+
+    if command -v "$cmd_name" >/dev/null 2>&1; then
+        cli-wrapped log "$command"
+    fi
 }
 
 if [ -z "$PROMPT_COMMAND" ]; then
