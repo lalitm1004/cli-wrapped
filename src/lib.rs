@@ -7,10 +7,13 @@ use std::{
 use chrono::{DateTime, Datelike, Utc};
 use serde::{Deserialize, Serialize};
 use walkdir::WalkDir;
+use colored::*;
 
 pub mod ascii;
 
 const MAX_LINES: usize = 100;
+const GRAY_COLOR: Color = Color::TrueColor { r: 128, g: 128, b: 128 };
+const COLOR_2: Color = Color::TrueColor { r: 142, g: 57, b: 189 };
 
 #[derive(Debug, Serialize, Deserialize)]
 struct CommandEntry {
@@ -72,8 +75,8 @@ pub fn clear_log() -> io::Result<()> {
 
 pub fn display_wrapped() -> io::Result<()> {
     let log_dir = get_log_directory();
-    let mut command_map: HashMap<String, i32> = HashMap::new();
-    let mut invokation_map: HashMap<String, i32> = HashMap::new();
+    let mut command_map: HashMap<String, usize> = HashMap::new();
+    let mut invokation_map: HashMap<String, usize> = HashMap::new();
 
     for entry in WalkDir::new(&log_dir)
         .into_iter()
@@ -88,20 +91,59 @@ pub fn display_wrapped() -> io::Result<()> {
             );
         }
     }
+    
+    let total_commands: usize = invokation_map.values().sum();
 
-    ascii::display_title();
-    ascii::display_year();
+    let sorted_command = sort_map(command_map);
+    let sorted_invokation = sort_map(invokation_map);
 
-    // println!("{:?}", command_map);
-    // println!("{:?}", invokation_map);
+    ascii::print_title();
+    ascii::print_year();
+
+
+    println!("\nTop Commands");
+    println!("-----------------");
+    display_top_10(sorted_command);
+    
+    println!("\nTop Invokations");
+    println!("-----------------");
+    display_top_10(sorted_invokation);
+
+    println!(
+        "\nTotal Commands > {}",
+        total_commands.to_string().green()
+    );
+    // println!("{:?}", sorted_command);
+    // println!("{:?}", sorted_invokation);
 
     Ok(())
 }
 
+fn display_top_10(sorted: Vec<(String, usize)>) {
+    for i in 0..10.min(sorted.len()) {
+        let count = format!("{:06}", sorted[i].1);
+        let leading_zeroes = &count[0..count.find(|c: char| c != '0').unwrap_or(count.len())];
+        let rest = &count[leading_zeroes.len()..];
+
+        println!(
+            "{}{} {}",
+            leading_zeroes.color(GRAY_COLOR),
+            rest,
+            sorted[i].0.color(COLOR_2)
+        )
+    }
+}
+
+fn sort_map(map: HashMap<String, usize>) -> Vec<(String, usize)> {
+    let mut sorted_map: Vec<(String, usize)> = map.into_iter().collect();
+    sorted_map.sort_by(|a, b| b.1.cmp(&a.1));
+    sorted_map
+}
+
 fn tally_log_file(
     log_file_path: &Path,
-    command_map: &mut HashMap<String, i32>,
-    invokation_map: &mut HashMap<String, i32>
+    command_map: &mut HashMap<String, usize>,
+    invokation_map: &mut HashMap<String, usize>
 ) {
     if let Ok(file) = fs::File::open(log_file_path) {
         let reader = io::BufReader::new(file);

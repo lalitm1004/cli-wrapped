@@ -1,6 +1,6 @@
 use chrono::{Datelike, Utc};
 
-pub fn display_title() {
+pub fn print_title() {
     let title = vec![
         "   ██████╗██╗     ██╗    ██╗    ██╗██████╗  █████╗ ██████╗ ██████╗ ███████╗██████╗ ",
         "  ██╔════╝██║     ██║    ██║    ██║██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗",
@@ -15,7 +15,7 @@ pub fn display_title() {
     }
 }
 
-pub fn display_year() {
+pub fn print_year() {
     let numbers = [
         vec![
             " ██████╗ ",
