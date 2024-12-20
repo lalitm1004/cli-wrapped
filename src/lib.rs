@@ -1,11 +1,14 @@
 use std::{
+    collections::HashMap,
     fs::{self, OpenOptions},
     io::{self, BufRead, Write},
-    path::PathBuf
+    path::{Path, PathBuf}
 };
 use chrono::{DateTime, Datelike, Utc};
 use serde::{Deserialize, Serialize};
 use walkdir::WalkDir;
+
+pub mod ascii;
 
 const MAX_LINES: usize = 100;
 
@@ -14,7 +17,6 @@ struct CommandEntry {
     command: String,
     timestamp: DateTime<Utc>,
 }
-
 
 pub fn log_command(command: String) -> io::Result<()> {
     if !should_log_command(&command) {
@@ -69,9 +71,50 @@ pub fn clear_log() -> io::Result<()> {
 }
 
 pub fn display_wrapped() -> io::Result<()> {
-    println!("display");
+    let log_dir = get_log_directory();
+    let mut command_map: HashMap<String, i32> = HashMap::new();
+    let mut invokation_map: HashMap<String, i32> = HashMap::new();
+
+    for entry in WalkDir::new(&log_dir)
+        .into_iter()
+        .filter_map(|e| e.ok())
+    {
+        let file_name = entry.file_name().to_string_lossy();
+        if file_name.starts_with("command_log_") && file_name.ends_with(".jsonl") {
+            tally_log_file(
+                entry.path(),
+                &mut command_map,
+                &mut invokation_map,
+            );
+        }
+    }
+
+    ascii::display_title();
+    ascii::display_year();
+
+    // println!("{:?}", command_map);
+    // println!("{:?}", invokation_map);
 
     Ok(())
+}
+
+fn tally_log_file(
+    log_file_path: &Path,
+    command_map: &mut HashMap<String, i32>,
+    invokation_map: &mut HashMap<String, i32>
+) {
+    if let Ok(file) = fs::File::open(log_file_path) {
+        let reader = io::BufReader::new(file);
+
+        for line in reader.lines().filter_map(|l| l.ok()) {
+            if let Ok(entry) = serde_json::from_str::<CommandEntry>(&line) {
+                if let Some(base_command) = entry.command.split_whitespace().next() {
+                    *command_map.entry(base_command.to_string()).or_insert(0) += 1;
+                    *invokation_map.entry(entry.command).or_insert(0) += 1;
+                }
+            }
+        }
+    }
 }
 
 fn get_log_directory() -> PathBuf {
@@ -89,6 +132,7 @@ fn get_log_directory() -> PathBuf {
 fn get_log_file_path() -> PathBuf {
     let log_dir = get_log_directory();
 
+    // find number of latest log file
     let mut highest_num = 0;
     for entry in WalkDir::new(&log_dir)
         .min_depth(1)
@@ -134,6 +178,7 @@ fn count_lines(file_path: &PathBuf) -> usize {
 }
 
 fn should_log_command(command: &str) -> bool {
-    !command.trim().starts_with("wrapped") &&
-    !command.trim().is_empty()
+    !command.trim().starts_with("cli-wrapped") &&
+    !command.trim().is_empty() &&
+    !command.trim().starts_with("code")
 }
