@@ -1,25 +1,12 @@
 use std::io;
 
+use cli_wrapped::{
+    clear_logs,
+    display_wrapped,
+    log_command,
+    cli::args::Cli,
+};
 use structopt::StructOpt;
-
-#[derive(Debug, StructOpt)]
-#[structopt(name = "wrapped")]
-enum Cli {
-    // log a command (interal use)
-    #[structopt(name = "log")]
-    Log {
-        #[structopt(name = "COMMAND", default_value = "")]
-        command: String,
-    },
-
-    // clear log history
-    #[structopt(name = "clear")]
-    Clear,
-
-    // default to displaying wrapped
-    #[structopt(name = "display")]
-    Display,
-}
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = std::env::args().collect();
@@ -30,9 +17,9 @@ fn main() -> io::Result<()> {
     };
 
     match opt {
-        Cli::Log { command } => cli_wrapped::log_command(command)?,
-        Cli::Clear => cli_wrapped::clear_log()?,
-        Cli::Display => cli_wrapped::display_wrapped()?,
+        Cli::Log { command } => log_command(command)?,
+        Cli::Clear => clear_logs()?,
+        Cli::Display => display_wrapped()?,
     }
 
     Ok(())
