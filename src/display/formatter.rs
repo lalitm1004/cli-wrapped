@@ -24,14 +24,14 @@ pub fn display_wrapped() -> io::Result<()> {
 
     print_title();
     print_year();
-    
+
     println!("\n");
     println!("     Count | Top Commands                  Count | Top Invokations");
     println!("   --------+------------------------     --------+--------------------------------");
     print_top_10(sorted_commands, sorted_invokations);
-    
+
     println!("\n   Total Commands > {}", total_commands);
-    
+
     Ok(())
 }
 
@@ -39,7 +39,7 @@ fn print_top_10(
     sorted_commands: Vec<(String, usize)>,
     sorted_invokations: Vec<(String, usize)>
 ) {
-    
+
     // sorted_invokations.len() will always be greater than or equal to sorted_commands.len() as invokations are reduced to commands
     for i in 0..10.min(sorted_invokations.len()) {
         let formatted_command = format_entry(sorted_commands[i].clone());
@@ -55,7 +55,7 @@ fn print_top_10(
 fn format_entry(entry: (String, usize)) -> String {
     let gray: Color = color_from_hex("#525252");
     let text: Color = color_from_hex("#6D28D9");
-    
+
     let count = format!("{:06}", entry.1);
     let leading_zeroes = &count[0..count.find(|c: char| c != '0').unwrap_or(count.len())];
     let rest = &count[leading_zeroes.len()..];
@@ -69,10 +69,10 @@ fn format_entry(entry: (String, usize)) -> String {
 }
 
 fn get_command_invokation_maps() -> io::Result<(HashMap<String, usize>, HashMap<String, usize>)> {
-    
+
     let mut command_map: HashMap<String, usize> = HashMap::new();
     let mut invokation_map: HashMap<String, usize> = HashMap::new();
-    
+
     let log_directory = get_log_directory()?;
     for entry in WalkDir::new(log_directory)
         .into_iter()
@@ -110,7 +110,7 @@ fn tally_log_file(
                 }
             }
         }
-    }   
+    }
 }
 
 fn sort_map(map: HashMap<String, usize>) -> Vec<(String, usize)> {
