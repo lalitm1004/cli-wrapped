@@ -30,7 +30,7 @@ pub fn display_wrapped() -> io::Result<()> {
     println!("   --------+------------------------     --------+--------------------------------");
     print_top_10(sorted_commands, sorted_invocations);
 
-    println!("\n   Total Commands > {}", total_commands);
+    println!("\n   Total Commands > {}", total_commands.to_string().green());
 
     Ok(())
 }
@@ -40,10 +40,26 @@ fn print_top_10(
     sorted_invocations: Vec<(String, usize)>
 ) {
 
-    // sorted_invocations.len() will always be greater than or equal to sorted_commands.len() as invocations are reduced to commands
-    for i in 0..10.min(sorted_invocations.len()) {
-        let formatted_command = format_entry(sorted_commands[i].clone());
-        let formatted_invocation = format_entry(sorted_invocations[i].clone());
+    let max_entries = 10;
+    let commands_len = sorted_commands.len();
+    let invocations_len = sorted_invocations.len();
+
+    let num_rows = max_entries.min(commands_len.max(invocations_len));
+
+    for i in 0..num_rows {
+        // let formatted_command = format_entry(sorted_commands[i].clone());
+        let formatted_command = if i < commands_len {
+            format_entry(sorted_commands[i].clone())
+        } else {
+            String::from(" ".repeat(5 + 24 + 4))
+        };
+
+        let formatted_invocation: String = if i < invocations_len {
+            format_entry(sorted_invocations[i].clone())
+        } else {
+            String::from(" ".repeat(5 + 24))
+        };
+
         println!(
             "    {}     {}",
             formatted_command,
