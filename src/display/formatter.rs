@@ -17,18 +17,18 @@ use crate::{
 use super::ascii::{print_title, print_year};
 
 pub fn display_wrapped() -> io::Result<()> {
-    let (command_map, invokation_map) = get_command_invokation_maps()?;
+    let (command_map, invocation_map) = get_command_invocation_maps()?;
     let total_commands: usize = command_map.values().sum();
     let sorted_commands = sort_map(command_map);
-    let sorted_invokations = sort_map(invokation_map);
+    let sorted_invocations = sort_map(invocation_map);
 
     print_title();
     print_year();
 
     println!("\n");
-    println!("     Count | Top Commands                  Count | Top Invokations");
+    println!("     Count | Top Commands                  Count | Top Invocations");
     println!("   --------+------------------------     --------+--------------------------------");
-    print_top_10(sorted_commands, sorted_invokations);
+    print_top_10(sorted_commands, sorted_invocations);
 
     println!("\n   Total Commands > {}", total_commands);
 
@@ -37,17 +37,17 @@ pub fn display_wrapped() -> io::Result<()> {
 
 fn print_top_10(
     sorted_commands: Vec<(String, usize)>,
-    sorted_invokations: Vec<(String, usize)>
+    sorted_invocations: Vec<(String, usize)>
 ) {
 
-    // sorted_invokations.len() will always be greater than or equal to sorted_commands.len() as invokations are reduced to commands
-    for i in 0..10.min(sorted_invokations.len()) {
+    // sorted_invocations.len() will always be greater than or equal to sorted_commands.len() as invocations are reduced to commands
+    for i in 0..10.min(sorted_invocations.len()) {
         let formatted_command = format_entry(sorted_commands[i].clone());
-        let formatted_invokation = format_entry(sorted_invokations[i].clone());
+        let formatted_invocation = format_entry(sorted_invocations[i].clone());
         println!(
             "    {}     {}",
             formatted_command,
-            formatted_invokation,
+            formatted_invocation,
         )
     }
 }
@@ -68,10 +68,10 @@ fn format_entry(entry: (String, usize)) -> String {
     )
 }
 
-fn get_command_invokation_maps() -> io::Result<(HashMap<String, usize>, HashMap<String, usize>)> {
+fn get_command_invocation_maps() -> io::Result<(HashMap<String, usize>, HashMap<String, usize>)> {
 
     let mut command_map: HashMap<String, usize> = HashMap::new();
-    let mut invokation_map: HashMap<String, usize> = HashMap::new();
+    let mut invocation_map: HashMap<String, usize> = HashMap::new();
 
     let log_directory = get_log_directory()?;
     for entry in WalkDir::new(log_directory)
@@ -80,17 +80,17 @@ fn get_command_invokation_maps() -> io::Result<(HashMap<String, usize>, HashMap<
     {
         let file_name = entry.file_name().to_string_lossy();
         if file_name.starts_with(LOG_FILE_PREFIX) && file_name.ends_with(LOG_FILE_EXTENSION) {
-            tally_log_file(entry.path(), &mut command_map, &mut invokation_map);
+            tally_log_file(entry.path(), &mut command_map, &mut invocation_map);
         }
     }
 
-    Ok((command_map, invokation_map))
+    Ok((command_map, invocation_map))
 }
 
 fn tally_log_file(
     log_file_path: &Path,
     command_map: &mut HashMap<String, usize>,
-    invokation_map: &mut HashMap<String, usize>
+    invocation_map: &mut HashMap<String, usize>
 ) {
     if let Ok(file) = fs::File::open(log_file_path) {
         let reader = io::BufReader::new(file);
@@ -102,10 +102,10 @@ fn tally_log_file(
                     // custom parsing for python to handle virtual environments
                     if base_command.ends_with("python.exe") {
                         *command_map.entry("python".to_string()).or_insert(0) += 1;
-                        *invokation_map.entry(format!("python {:?}", split_command.next().unwrap()).to_string()).or_insert(0) += 1;
+                        *invocation_map.entry(format!("python {:?}", split_command.next().unwrap()).to_string()).or_insert(0) += 1;
                     } else {
                         *command_map.entry(base_command.to_string()).or_insert(0) += 1;
-                        *invokation_map.entry(entry.command).or_insert(0) += 1;
+                        *invocation_map.entry(entry.command).or_insert(0) += 1;
                     }
                 }
             }
