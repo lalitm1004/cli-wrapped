@@ -22,6 +22,7 @@ pub fn display_wrapped() -> io::Result<()> {
     let sorted_commands = sort_map(command_map);
     let sorted_invocations = sort_map(invocation_map);
 
+    println!("\n");
     print_title();
     print_year();
 
