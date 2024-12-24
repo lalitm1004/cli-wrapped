@@ -8,9 +8,9 @@ use serde::{Deserialize, Serialize};
 use crate::{get_base_directory, get_log_file_path};
 
 #[derive(Debug, Serialize, Deserialize)]
-struct CommandEntry {
-    command: String,
-    timestamp: DateTime<Utc>
+pub struct CommandEntry {
+    pub command: String,
+    pub timestamp: DateTime<Utc>
 }
 
 pub fn log_command(command: String) -> io::Result<()> {
