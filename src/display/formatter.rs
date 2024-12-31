@@ -14,6 +14,9 @@ use crate::{
     CommandEntry,
 };
 
+const GRAY: &'static str = "#525252";
+const TEXT: &'static str = "#6D28D9";
+
 use super::ascii::{print_title, print_year};
 
 pub fn display_wrapped() -> io::Result<()> {
@@ -27,8 +30,8 @@ pub fn display_wrapped() -> io::Result<()> {
     print_year();
 
     println!("\n");
-    println!("     Count | Top Commands                  Count | Top Invocations");
-    println!("   --------+------------------------     --------+--------------------------------");
+    println!("     Count {} Top Commands                  Count {} Top Invocations", "|".color(color_from_hex(GRAY)), "|".color(color_from_hex(GRAY)));
+    println!("{}", "   --------+------------------------     --------+--------------------------------".color(color_from_hex(GRAY)));
     print_top_10(sorted_commands, sorted_invocations);
 
     println!("\n   Total Commands > {}", total_commands.to_string().green());
@@ -70,18 +73,23 @@ fn print_top_10(
 }
 
 fn format_entry(entry: (String, usize)) -> String {
-    let gray: Color = color_from_hex("#525252");
-    let text: Color = color_from_hex("#6D28D9");
 
     let count = format!("{:06}", entry.1);
     let leading_zeroes = &count[0..count.find(|c: char| c != '0').unwrap_or(count.len())];
     let rest = &count[leading_zeroes.len()..];
 
+    let truncated = if entry.0.len() > 24 {
+        format!("{}...", &entry.0[..21])
+    } else {
+        entry.0
+    };
+
     format!(
-        "{}{} | {:24}",
-        leading_zeroes.color(gray),
+        "{}{} {} {:24}",
+        leading_zeroes.color(color_from_hex(GRAY)),
         rest,
-        entry.0.color(text)
+        "|".color(color_from_hex(GRAY)),
+        truncated.color(color_from_hex(TEXT))
     )
 }
 
